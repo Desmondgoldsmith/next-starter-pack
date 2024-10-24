@@ -75,8 +75,6 @@ jobs:
           vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
           vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
           vercel-args: '--env NEXT_PUBLIC_ENV=development'
-          alias-domains: |
-            dev-myapp.vercel.app
 
   deploy-staging:
     name: 🚀 Deploy Staging
@@ -99,8 +97,6 @@ jobs:
           vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
           vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
           vercel-args: '--env NEXT_PUBLIC_ENV=staging'
-          alias-domains: |
-            staging-myapp.vercel.app
 
   deploy-production:
     name: 🚀 Deploy Production
@@ -123,5 +119,3 @@ jobs:
           vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
           vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
           vercel-args: '--prod'
-          alias-domains: |
-            myapp.vercel.app
