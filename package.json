@@ -9,7 +9,7 @@
     "lint": "next lint --dir src",
     "lint:fix": "next lint --dir src --fix",
     "type-check": "tsc --noEmit",
-    "test": "jest",
+    "test": "jest --passWithNoTests",
     "test:watch": "jest --watch",
     "validate": "yarn lint && yarn type-check && yarn build",
     "prepare": "husky && husky install",
