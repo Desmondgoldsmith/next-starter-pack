@@ -10,6 +10,7 @@ permissions:
   contents: read
   deployments: write
   pull-requests: write
+  security-events: write
 
 env:
   NODE_VERSION: '20'
@@ -17,8 +18,23 @@ env:
   VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
 
 jobs:
+  dependency-review:
+    name: 🔍 Review Dependencies
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Dependency Review
+        uses: actions/dependency-review-action@v3
+        with:
+          fail-on-severity: high
+          deny-licenses: 'AGPL-1.0-or-later, GPL-1.0-or-later'
+
   validate:
     name: 🔍 Validate
+    needs: [dependency-review]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -52,6 +68,9 @@ jobs:
     needs: [validate]
     runs-on: ubuntu-latest
     if: github.event_name == 'pull_request'
+    environment:
+      name: preview
+      url: ${{ steps.deploy.outputs.preview-url }}
     
     steps:
       - name: Checkout
