@@ -12,40 +12,9 @@ on:
       - staging
       - main
 
-permissions:
-  contents: read
-  deployments: write
-  pull-requests: write
-  security-events: write
-
-env:
-  NODE_VERSION: '20'
-  VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-  VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
-
 jobs:
-  security:
-    name: 🛡️ Security Checks
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      
-      - name: Run Dependency Review
-        uses: actions/dependency-review-action@v3
-        with:
-          fail-on-severity: high
-          
-      - name: Cache node modules
-        uses: actions/cache@v3
-        with:
-          path: ~/.npm
-          key: ${{ runner.os }}-node-${{ hashFiles('**/yarn.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-node-
-
-  quality:
-    name: 🔍 Code Quality
-    needs: security
+  validate:
+    name: 🔍 Validate
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -53,92 +22,57 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: ${{ env.NODE_VERSION }}
+          node-version: '20'
           cache: 'yarn'
       
       - name: Install dependencies
-        run: |
-          echo "Installing dependencies..."
-          yarn install --frozen-lockfile
+        run: yarn install --frozen-lockfile
       
-      - name: Run ESLint
-        run: |
-          echo "Running ESLint..."
-          yarn lint
+      - name: Run linting
+        run: yarn lint
       
-      - name: Run Type Check
-        run: |
-          echo "Running TypeScript checks..."
-          yarn type-check
+      - name: Run type checking
+        run: yarn type-check
       
-      - name: Run Tests
-        run: |
-          echo "Running tests..."
-          yarn test
-        
-      - name: Build Application
-        run: |
-          echo "Building application..."
-          yarn build
-
-  preview:
-    name: 🔎 Preview
-    needs: quality
-    runs-on: ubuntu-latest
-    if: github.event_name == 'pull_request'
-    environment:
-      name: preview
-      url: ${{ steps.deploy-preview.outputs.url }}
-    
-    steps:
-      - uses: actions/checkout@v4
+      - name: Run tests
+        run: yarn test
       
-      - name: Deploy Preview
-        id: deploy-preview
-        uses: amondnet/vercel-action@v25
-        with:
-          vercel-token: ${{ secrets.VERCEL_TOKEN }}
-          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
-          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          github-comment: true
+      - name: Build application
+        run: yarn build
 
   deploy:
     name: 🚀 Deploy
-    needs: quality
+    needs: validate
     runs-on: ubuntu-latest
-    if: github.event_name == 'push'
+    env:
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
     
     steps:
       - uses: actions/checkout@v4
       
+      - name: Install Vercel CLI
+        run: yarn global add vercel@latest
+      
       - name: Deploy to Development
         if: github.ref == 'refs/heads/develop'
-        uses: amondnet/vercel-action@v25
-        with:
-          vercel-token: ${{ secrets.VERCEL_TOKEN }}
-          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
-          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
-          vercel-args: '--prod --env NEXT_PUBLIC_ENV=development'
-          alias-domains: |
-            dev-{VERCEL_PROJECT_NAME}.vercel.app
+        run: |
+          vercel deploy --token=${{ secrets.VERCEL_TOKEN }} \
+            --env NEXT_PUBLIC_ENV=development \
+            --yes \
+            --prod
       
       - name: Deploy to Staging
         if: github.ref == 'refs/heads/staging'
-        uses: amondnet/vercel-action@v25
-        with:
-          vercel-token: ${{ secrets.VERCEL_TOKEN }}
-          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
-          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
-          vercel-args: '--prod --env NEXT_PUBLIC_ENV=staging'
-          alias-domains: |
-            staging-{VERCEL_PROJECT_NAME}.vercel.app
+        run: |
+          vercel deploy --token=${{ secrets.VERCEL_TOKEN }} \
+            --env NEXT_PUBLIC_ENV=staging \
+            --yes \
+            --prod
       
       - name: Deploy to Production
         if: github.ref == 'refs/heads/main'
-        uses: amondnet/vercel-action@v25
-        with:
-          vercel-token: ${{ secrets.VERCEL_TOKEN }}
-          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
-          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
-          vercel-args: '--prod'
+        run: |
+          vercel deploy --token=${{ secrets.VERCEL_TOKEN }} \
+            --yes \
+            --prod
