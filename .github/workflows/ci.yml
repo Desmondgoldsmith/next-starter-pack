@@ -7,6 +7,7 @@ on:
       - staging
       - main
   pull_request:
+    types: [opened, synchronize, reopened]
     branches: 
       - develop
       - staging
@@ -24,28 +25,8 @@ env:
   VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
 
 jobs:
-  security:
-    name: 🛡️ Security Checks
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      
-      - name: Run Dependency Review
-        uses: actions/dependency-review-action@v3
-        with:
-          fail-on-severity: high
-          
-      - name: Cache node modules
-        uses: actions/cache@v3
-        with:
-          path: ~/.npm
-          key: ${{ runner.os }}-node-${{ hashFiles('**/yarn.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-node-
-
-  quality:
-    name: 🔍 Code Quality
-    needs: security
+  validate:
+    name: 🔍 Validate Code
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -81,9 +62,23 @@ jobs:
           echo "Building application..."
           yarn build
 
+  security:
+    name: 🛡️ Security Review
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Run Dependency Review
+        uses: actions/dependency-review-action@v3
+        with:
+          fail-on-severity: high
+          base-ref: ${{ github.event.pull_request.base.ref }}
+          head-ref: ${{ github.event.pull_request.head.ref }}
+
   preview:
     name: 🔎 Preview
-    needs: quality
+    needs: [validate, security]
     runs-on: ubuntu-latest
     if: github.event_name == 'pull_request'
     environment:
@@ -105,7 +100,7 @@ jobs:
 
   deploy:
     name: 🚀 Deploy
-    needs: quality
+    needs: validate
     runs-on: ubuntu-latest
     if: github.event_name == 'push'
     
