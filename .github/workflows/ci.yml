@@ -6,6 +6,11 @@ on:
   pull_request:
     branches: [develop, staging, main]
 
+permissions:
+  contents: read
+  deployments: write
+  pull-requests: write
+
 env:
   NODE_VERSION: '20'
   VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
@@ -40,6 +45,10 @@ jobs:
     needs: [validate]
     runs-on: ubuntu-latest
     if: github.event_name == 'pull_request'
+    permissions:
+      pull-requests: write
+      deployments: write
+      contents: read
     
     steps:
       - name: Checkout
@@ -52,6 +61,8 @@ jobs:
           vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
           vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
+          github-comment: true
+          working-directory: ./
 
   deploy-development:
     name: 🚀 Deploy Development
@@ -74,6 +85,7 @@ jobs:
           vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
           vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
           vercel-args: '--env NEXT_PUBLIC_ENV=development'
+          working-directory: ./
 
   deploy-staging:
     name: 🚀 Deploy Staging
@@ -96,6 +108,7 @@ jobs:
           vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
           vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
           vercel-args: '--env NEXT_PUBLIC_ENV=staging'
+          working-directory: ./
 
   deploy-production:
     name: 🚀 Deploy Production
@@ -118,3 +131,4 @@ jobs:
           vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
           vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
           vercel-args: '--prod'
+          working-directory: ./
