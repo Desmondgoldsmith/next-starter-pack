@@ -23,8 +23,8 @@ export default function Home() {
 
           <li>Save and see your changes instantly.</li>
         </ol>
-        <h1 className="text-3xl font-bold text-red-600">
-          Desmond Goldsmith The Best
+        <h1 className="text-3xl font-bold text-yellow-600">
+          Desmond Goldsmith The Best !!!!
         </h1>
         <div className="flex gap-4 items-center flex-col sm:flex-row">
           <a
