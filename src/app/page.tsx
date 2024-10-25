@@ -26,6 +26,7 @@ export default function Home() {
         <h1 className="text-3xl font-bold text-yellow-600">
           Desmond Goldsmith The Best !!!!
         </h1>
+        <p className="text-red-600 text-2xl">Lets have fun!</p>
         <div className="flex gap-4 items-center flex-col sm:flex-row">
           <a
             className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
