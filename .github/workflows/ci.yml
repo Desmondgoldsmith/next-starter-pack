@@ -17,8 +17,8 @@ env:
   VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
 
 jobs:
-  install-and-cache:
-    name: 📦 Install & Cache
+  validate:
+    name: 🔍 Validate
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -31,37 +31,9 @@ jobs:
           cache: 'yarn'
 
       - name: Install dependencies
-        run: yarn install --frozen-lockfile
-
-      - name: Cache dependencies
-        uses: actions/cache@v4
-        with:
-          path: |
-            **/node_modules
-            ${{ github.workspace }}/.next/cache
-          key: ${{ runner.os }}-modules-${{ hashFiles('**/yarn.lock') }}
-
-  validate:
-    name: 🔍 Validate
-    needs: [install-and-cache]
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: 'yarn'
-
-      - name: Restore cache
-        uses: actions/cache@v4
-        with:
-          path: |
-            **/node_modules
-            ${{ github.workspace }}/.next/cache
-          key: ${{ runner.os }}-modules-${{ hashFiles('**/yarn.lock') }}
+        run: |
+          yarn install --frozen-lockfile
+          yarn add next --frozen-lockfile
 
       - name: Run linting
         run: yarn lint
@@ -122,6 +94,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+
       - name: Deploy to Vercel
         id: deploy
         uses: amondnet/vercel-action@v25
@@ -146,6 +121,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+
       - name: Deploy to Vercel
         id: deploy
         uses: amondnet/vercel-action@v25
@@ -169,6 +147,9 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
 
       - name: Deploy to Vercel
         id: deploy
