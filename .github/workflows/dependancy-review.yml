@@ -1,19 +1,18 @@
-version: 2
-updates:
-  - package-ecosystem: "npm"
-    directory: "/"
-    schedule:
-      interval: "weekly"
-    groups:
-      dependencies:
-        patterns:
-          - "*"
-    open-pull-requests-limit: 10
-    versioning-strategy: increase
-    labels:
-      - "dependencies"
-      - "automerge"
-    commit-message:
-      prefix: "chore"
-      prefix-development: "chore"
-      include: "scope"
+name: 'Dependency Review'
+on: 
+  pull_request:
+    branches: [ main, develop, staging ]
+    types: [opened, reopened, synchronize]
+
+permissions:
+  contents: read
+
+jobs:
+  dependency-review:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 'Checkout Repository'
+        uses: actions/checkout@v4
+      
+      - name: 'Dependency Review'
+        uses: actions/dependency-review-action@v3

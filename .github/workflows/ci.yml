@@ -6,6 +6,11 @@ on:
   pull_request:
     branches: [develop, staging, main]
 
+permissions:
+  contents: read
+  deployments: write
+  pull-requests: write
+
 env:
   NODE_VERSION: '20'
   VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
@@ -40,19 +45,24 @@ jobs:
     needs: [validate]
     runs-on: ubuntu-latest
     if: github.event_name == 'pull_request'
+    permissions:
+      pull-requests: write
+      deployments: write
+      contents: read
     
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
       - name: Deploy to Vercel
+        id: deploy
         uses: amondnet/vercel-action@v25
         with:
           vercel-token: ${{ secrets.VERCEL_TOKEN }}
           vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
           vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          vercel-args: '--preview'
+          github-comment: true
 
   deploy-development:
     name: 🚀 Deploy Development
