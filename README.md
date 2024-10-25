@@ -43,7 +43,7 @@ src/
 
 1. Clone the repository:
    ```bash
-   git clone <repository-url>
+   git clone https://github.com/Desmondgoldsmith/next-starter-pack.git
    cd next-starter
    ```
 
